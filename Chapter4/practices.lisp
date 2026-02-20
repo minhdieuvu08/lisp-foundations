@@ -1,8 +1,8 @@
-;;; ============================================================
-;;; Chapter 4 - Predicates and Conditionals
-;;; Book: LISP - 3rd Edition
-;;; Author: Patrick Henry Winston and Berthold Klaus Paul Horn
-;;; ============================================================
+; ;;; ============================================================
+; ;;; Chapter 4 - Predicates and Conditionals
+; ;;; Book: LISP - 3rd Edition
+; ;;; Author: Patrick Henry Winston and Berthold Klaus Paul Horn
+; ;;; ============================================================
 
 (format t "Compare (+ 2 12) with 4: ~A~%" (equal (+ 2 12) 4))
 (format t "Compare (+ 2 1) with 3: ~A~%" (equal (+ 2 1) 3))
@@ -10,6 +10,9 @@
 ; Notes: 'equal' only compares 2 arguments
 (format t "Compare (+ 2 3) with (-8 4) and 4: ~A~%" (equal (+ 2 3) (- 8 4) 4)) 
 
+;;;; ============================================================
+;;;; List Membership - MEMBER
+;;;; ============================================================
 ;; declare variable
 (defvar sentence nil)
 ;; assign value
@@ -45,6 +48,9 @@
 (format t "Member: ~A~%" (member '(maple shade) pairs :test-not #'equal))
 (format t "Member: ~A~%" (member '(maple shade) '((maple shade) (maple shade)) :test-not #'equal))
 
+;;;; ============================================================
+;;;; Data-Type Predicates - LISTP, ATOM, NUMBERP, SYMBOLP
+;;;; ============================================================
 (format t "atom1: ~A~%" (atom 'pi))
 (format t "atom2: ~A~%" (atom pi))
 (format t "numberp1: ~A~%" (numberp 'pi))
@@ -58,6 +64,9 @@
 (format t "eql: ~A~%" (eql nil '()))
 (format t "equal: ~A~%" (equal nil ))
 
+;;;; ============================================================
+;;;; Empty-List Predicates - NULL, ENDP
+;;;; ============================================================
 ; The 'null' function checks if the argument is NIL
 (format t "null: ~A~%" (null '(this is not empty)))
 (format t "endp: ~A~%" (endp '(this is not empty)))
@@ -71,7 +80,9 @@
 
 (format t "endp: ~A~%" (endp 'this-is-a-symbol))
 
-
+;;;; ============================================================
+;;;; Number Predicates 
+;;;; ============================================================
 (defparameter zero 0) 
 (defparameter one 1)
 (defparameter two 2)
@@ -104,7 +115,9 @@
 (> three two one)
 (> three one two)
 
-;; Predicates - AND, OR
+;;;; ============================================================
+;;;; Predicates - AND, OR
+;;;; ============================================================
 (defparameter pets '(dog cat))
 ; S1: Check for 'dog -> returns (dog cat) which is not NIL -> S2
 ; S2: Check for 'tiger -> returns NIL
@@ -114,7 +127,7 @@
 ; AND returns NIL if any of its arguments evaluate to NIL.
 ; OR returns NIL only if all of its arguments evaluate to NIL.
 (format t "Check if dingo or tiger is in the pets list: ~A~%" (or (member 'dingo pets) (member 'tiger pets)))
-(format t "KCheck if cat and dog are in the pets list: ~A~%" (and (member 'dog pets) (member 'cat pets)))
+(format t "Check if cat and dog are in the pets list: ~A~%" (and (member 'dog pets) (member 'cat pets)))
 (format t "Check if dog or tiger is in the pets list: ~A~%" (or (member 'dog pets) (member 'tiger pets)))
 
 (format t "~A~%" (not nil))
@@ -127,6 +140,9 @@
 (format t "~A~%" (and (member 'dog pets) (member 'tiger pets)))
 (format t "~A~%" (and (member 'dog pets) (not (member 'tiger pets))))
 
+;;;; ============================================================
+;;;; Predicates - IF, WHEN, UNLESS
+;;;; ============================================================
 (defparameter *day-or-date* 'monday)
 (if (symbolp *day-or-date*) 'day 'date)
 (defparameter *day-or-date* 9)
@@ -141,7 +157,10 @@
     'new-record)
 (format t "~A~%" *high*)
 
-;(setf thing 'sphere r 1)
+;;;; ============================================================
+;;;; Predicates - COND
+;;;; ============================================================
+; (setf thing 'sphere r 1) -> ERROR
 (defparameter *thing* 'sphere)
 (defparameter *r* 1)
 
@@ -155,7 +174,6 @@
 
 (format t "A~%" (cond ((eq *thing* 'circle) (* pi *r* *r*))
     ((eq *thing* 'sphere) (* 4 pi *r* *r*))))
-
 (cond ((eq *thing* 'circle) (* pi *r* *r*))
     (t (* 4 pi *r* *r*)))
 
@@ -165,12 +183,51 @@
     ((* 4 pi *r* *r*)))
 
 (defparameter p .6)
-(cond ((> p .75) 'very-likely)
+(format t "~A~%" (cond ((> p .75) 'very-likely)
     ((> p .5) 'likely)
     ((> p .25) 'unlikely)
-    (t 'very-unlikely))
+    (t 'very-unlikely)))
 
 (defparameter breakfast '(eggs bacon toast tea))
-(cond ((> (length breakfast) 10) 'glutton)
+(format t "~A~%" (cond ((> (length breakfast) 10) 'glutton)
     ((not (endp breakfast)) 'normal)
-    (t 'anorexic))
+    (t 'anorexic)))
+; NORMAL
+(format t "~A~%" (cond ((> (length breakfast) 10) 'glutton)
+    (breakfast 'normal)
+    (t 'anorexic)))
+; NORMAL
+
+;;;; ============================================================
+;;;; CASE
+;;;; ============================================================
+; ; Example
+; (cond ((eq thing 'circle) (* pi r r))
+;     ((eq thing 'sphere) (* 4 pi r r)))
+
+; Rewrite
+(defparameter *thing* 'sphere) ; shape to compute
+(defparameter *r* 1) ; radius
+(format t "~A~%" 
+    (case *thing* 
+        (circle (* pi *r* *r*)) ; if it is a circle 
+        (sphere (* 4 pi *r* *r*)))) ; if it is a phere
+
+;; Notes:
+;;; Uses CASE instead of COND for cleaner branching on a single variable.
+;;; CASE compares the evaluated key form (*thing*) against the unevaluated key.
+
+; (defparameter *thing* 'point)
+; (defparameter *r* 1)
+; (case *thing* (circle (* pi *r* *r*)) (sphere (* 4 pi *r* *r*)))
+
+; (setf *thing* 'point *r* 1)
+; (case *thing* 
+;     (circle (* pi *r* *r*))
+;     (sphere (* 4 pi *r* *r*))
+; )
+; (setf *thing* 'point *r* 1)
+; (case *thing* 
+;     (circle (* pi *r* *r*))
+;     (sphere (* 4 pi *r* *r*))
+;     (otherwise 0))
