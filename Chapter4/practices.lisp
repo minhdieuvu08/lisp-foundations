@@ -213,21 +213,51 @@
         (circle (* pi *r* *r*)) ; if it is a circle 
         (sphere (* 4 pi *r* *r*)))) ; if it is a phere
 
+(defparameter *thing* 'point)
+(defparameter *r* 1)
+(format t "~A~%" (case *thing* 
+    (circle (* pi *r* *r*))
+    (sphere (* 4 pi *r* *r*)))
+)
+
+(format t "~A~%" (case *thing* 
+    (circle (* pi *r* *r*))
+    (sphere (* 4 pi *r* *r*))
+    (otherwise 0))
+)
+
+(defparameter *thing* 'ball)
+(defparameter *r* 1)
+(format t "~A~%" (case *thing*
+    ((circle wheel) (* pi *r* *r*))
+    ((sphere ball) (* 4 pi *r* *r*))
+    (otherwise 0))
+)
 ;; Notes:
 ;;; Uses CASE instead of COND for cleaner branching on a single variable.
 ;;; CASE compares the evaluated key form (*thing*) against the unevaluated key.
 
-; (defparameter *thing* 'point)
-; (defparameter *r* 1)
-; (case *thing* (circle (* pi *r* *r*)) (sphere (* 4 pi *r* *r*)))
+;;;; ============================================================
+;;;; DEFUN
+;;;; ============================================================
+(defun express-probability (p)
+(cond ((> p .75) 'very-likely)
+    ((> p .5) 'likely)
+    ((> p .25) 'unlikely)
+    (t 'very-unliekly))
+)
+(format t "~A~%" (express-probability .8))
+(format t "~A~%" (express-probability .4))
+(format t "~A~%" (express-probability .2))
 
-; (setf *thing* 'point *r* 1)
-; (case *thing* 
-;     (circle (* pi *r* *r*))
-;     (sphere (* 4 pi *r* *r*))
-; )
-; (setf *thing* 'point *r* 1)
-; (case *thing* 
-;     (circle (* pi *r* *r*))
-;     (sphere (* 4 pi *r* *r*))
-;     (otherwise 0))
+;;;; ============================================================
+;;;; Problem Reduction
+;;;; ============================================================
+(defun both-ends (whole-list)
+    (case (length whole-list)
+        (0 nil)
+        (1 (cons (first whole-list) whole-list))
+        (2 whole-list)
+        (t (cons (first whole-list) (last whole-list)))
+    )
+)
