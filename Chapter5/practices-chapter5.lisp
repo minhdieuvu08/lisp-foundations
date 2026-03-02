@@ -1,8 +1,8 @@
-;;; ============================================================
+;;; =========================================================================
 ;;; Chapter 5 - Procedure Abstraction and Recursion
 ;;; Book: LISP - 3rd Edition
 ;;; Author: Patrick Henry Winston and Berthold Klaus Paul Horn
-;;; ============================================================
+;;; =========================================================================
 
 ;; Procedure Abstraction
 (defun both-ends (whole-list)
@@ -92,3 +92,160 @@
     )
 )
 (format t "~A~%" (count-atoms '(sqrt (expt x 2) (expt y 2))))
+
+;;;; =========================================================================
+;;;; Optional Parameters
+;;;; =========================================================================
+(format t "~A~%" (root 9))
+(format t "~A~%" (root 9 2))
+(format t "~A~%" (root 27 3))
+
+;; Notes:
+; &OPTIONAL: Parameter that don't require an argument.
+; If it not provided, the program default to NIL or a specified value.
+(defun root (x &optional n)
+    (if n
+        ; If n is not NIL
+        (expt x (/ 1 n)) 
+        ; If n is NIL
+        (sqrt x))
+)
+(format t "~A~%" (root 9))
+(format t "~A~%" (root 9 2))
+(format t "~A~%" (root 27 3))
+
+(defun root (x &optional (n 2))
+    (expt x (/ 1 n))
+)
+(format t "~A~%" (root 9))
+(format t "~A~%" (root 9 2))
+(format t "~A~%" (root 27 3))
+
+(defun count-with-optional-parameter (lst &optional (result 0))
+    (if (endp lst)
+        ; Base case: if list is empty, return the accumulated total.
+        result
+        ; 1. Move to the next sub-list
+        ; 2. Increase 'result' by 1 
+        ; Continue recursion with updated values 
+        (count-with-optional-parameter (rest lst) (+ 1 result))
+    )
+)
+
+(format t "~A~%" (raise 2))
+(format t "~A~%" (raise 2 3))
+(format t "~A~%" (raise 2 3 5))
+
+;;;; =========================================================================
+;;;; Rest Parameters
+;;;; =========================================================================
+;; Notes:
+; &REST: Collects all remaining arugments into a single list.
+(defun raise-aux (result number-list)
+    "Raises result to each exponent in number-list using tail recursion."
+    (if (endp number-list)
+        result
+        (raise-aux (expt result (first number-list))
+                    (rest number-list)
+        )
+    )
+)
+
+(defun raise (x &rest numbers)
+    (raise-aux x numbers)
+)
+(format t "~A~%" (rotate-list '(a b c d e)))
+(format t "~A~%" (rotate-list '(a b c d e) :direction 'left))
+(format t "~A~%" (rotate-list '(a b c d e) :distance 2))
+(format t "~A~%" (rotate-list '(a b c d e) :distance 'left :distance 2))
+
+(defun rotate-list-right (l n)
+    (if (zerop n)
+        l
+        (rotate-list-right (append (last l) (butlast l)) (-n 1))
+    )
+)
+
+(defun rotate-list-left (l n)
+    (if (zerop n)
+        l
+        (rotate-list-left (append (rest l) (list (first l))) (- n 1))
+    )
+)
+;;;; =========================================================================
+;;;; Key Parameters
+;;;;==========================================================================
+;; Notes:
+; '&key' defines named, optional parameters with default values.
+; ':direction' is a symbol to decide the logic branch (left/right).
+; ':distance' is a number specifying how many times to rotate (defaults to 1). 
+(defun rotate-list (l &key direction distance)
+    (if (eq direction 'left)
+        ; Call left rotation if ':direction' is 'left'
+        (rotate-list-left l (if distance distance 1))
+        ; Otherwise, call right rotation
+        (rotate-list-right l (if distance distance 1))
+    )
+)
+
+(format t "~A~%" (rotate-list '(a b c d e) :direction 'left :distance 2))
+(format t "~A~%" (rotate-list '(a b c d e) :distance 2 :direction 'left))
+
+; Rewrite
+(defun rotate-list (l &key direction (distance 1))
+    (if (eq direction 'left)
+        (rotate-list-left l distance)
+        (rotate-list-right l distance)
+    )
+)
+
+(defun both-ends-with-let (whole-list)
+    (let* ((element (first whole-list))
+            (trailer (last whole-list)))
+        (cons element trailer)
+    )
+)
+
+;;;; =========================================================================
+;;;; Aux Parameters
+;;;;==========================================================================
+;; Notes:
+; &aux used to bind values to variable for use inside the function body,
+; similar to 'let*'
+
+(defun both-ends-with-aux
+    (whole-list &aux
+        (element (first whole-list))
+        (trailer (last whole-list))
+    )
+    (cons element trailer)
+)
+
+(defun user-defined-length (l)
+    (if (endp l)
+        0
+        (+ 1 (user-defined-length (rest l)))
+    )
+)
+
+(defun user-defined-append2 (l1 l2)
+    (if (endp l1)
+        l2
+        (cons (first l1)
+            (user-defined-append2 (rest l1) l2)
+        )
+    )
+)
+
+(defun append-aux (lists)
+    (if (endp lists)
+        nil
+        (user-defined-append2 (first lists)
+                            (append-aux (rest lists))
+        )
+    )
+)
+
+(defun user-defined-append (&rest lists)
+    (append-aux lists)
+)
