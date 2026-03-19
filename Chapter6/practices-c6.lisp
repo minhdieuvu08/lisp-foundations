@@ -204,6 +204,9 @@
 ;         (first input-list))
 ;         (t (<finding procedure> (rest input-list)))))
 
+;;;; =========================================================================
+;;;; MAPCAR, REMOVE-IF, REMOVE-IF-NOT, COUNT-IF and COUNTING
+;;;;==========================================================================
 (format t "~A~%" (mapcar #'oddp '(1 2 3)))
 (format t "~A~%" (mapcar #'= '(1 2 3) '(3 2 1)))
 (format t "~A~%" (mapcar #'book-author books))
@@ -212,6 +215,9 @@
 (format t "~A~%" (count-if #'fictionp books))
 (format t "~A~%" (find-if #'fictionp books))
 
+;;;; =========================================================================
+;;;; FUNCALL, APPLY
+;;;;==========================================================================
 (funcall #'first '(e1 e2 e3))
 (first '(e1 e2 e3))
 (funcall #'append '(a b) '(x y))
@@ -219,8 +225,34 @@
 (funcall #'append '(a b) '(x y))
 (append '(a b) '(x y))
 
-(defun toss (item procedure) (funcall procedure item))
+(defun toss (argument procedure) (funcall procedure argument))
 (format t "~A~%" (toss '(victim of attack) #'first))
 (format t "~A~%" (toss '(victim of attack) #'rest))
+(apply #'first '((e1 e2 e3)))
+(first '(e1 e2 e3))
 (apply #'append '((a b) (x y)))
 (append '(a b) '(x y))
+
+(apply #'+ '(1 2 3 4 5 6))
+(apply #'+ 1 2 3 '(4 5 6))
+
+(defun toss (argument procedure) 
+    (apply procedure (list argument))
+)
+;;;; =========================================================================
+;;;; LAMBDA
+;;;;==========================================================================
+(defun book-last-name (book)
+    (first (last (book-author book))))
+(format t "~A~%" (mapcar #'book-author books))
+
+;; Replace 'defun' by 'lambda'
+(lambda (book) (first (last (book-author book))))
+(format t "~A~%" (mapcar #'(lambda (book) (first (last (book-author book)))) books))
+(format t "~A~%" (remove-if-not #'(lambda (book) (member 'fiction (book-classification book))) books))
+
+(format t "~A~%" (funcall #'(lambda (parameter) (first parameter))
+    '(e1 e2 e3)))
+(format t "~A~%" (apply #'(lambda (parameter1 parameter2)
+    (append parameter1 parameter2))
+    '((a b) (x y))))
