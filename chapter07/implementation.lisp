@@ -81,3 +81,9 @@
     (when (endp cheers) (return loop-count))
     (setf cheers (rest cheers))
     (setf loop-count (+ loop-count 1)))
+
+;;;; =========================================================================
+;;;; PROG1 and PROGN
+;;;;==========================================================================
+(format t "~A~%" (prog1 (setf a 'x) (setf b 'y) (setf c 'z)))
+(format t "~A~%" (progn (setf a 'x) (setf b 'y) (setf c 'z)))
