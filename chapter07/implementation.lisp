@@ -48,6 +48,19 @@
 (format t "Outlyers (n=2): ~A~%" (first-n-outlyers 2 '(35 64 88 100)))
 (format t "Outlyers (n=10): ~A~%" (first-n-outlyers 10 '(15 28 64 101)))
 
+;;;; =========================================================================
+;;;; DO
+;;;;==========================================================================
+;; Notes:
+;; (do ((var1> <init1> <step1>) 
+;;      (<var2> <init2> <step2>)...)
+;;      (<test-form> <result>) 
+;;      <body>)
+;; 1. Variable List: (name initial-value)
+;; 2. <step> is the part that evaluates the new value for a variable at the end of each iteration.
+;; 3. If <test> is true return the <result>
+;; 4. Body consists of forms that are evaluated sequentially.
+
 (defun do-expt (m n)
     (do* ((result 1) (exponent n)) ((zerop exponent) result)
     (setf result (* m result))
@@ -72,6 +85,7 @@
         (exponent n (- exponent 1))
         (counter (- n 1) (- counter 1)))
         ((zerop counter) result)))
+        
 ;;;; =========================================================================
 ;;;; LOOP
 ;;;;==========================================================================
