@@ -3,6 +3,10 @@
 ;;; Book: LISP - 3rd Edition
 ;;; Author: Patrick Henry Winston and Berthold Klaus Paul Horn
 ;;; =========================================================================
+
+;;;; =========================================================================
+;;;; PRINT and READ
+;;;;==========================================================================
 (defparameter temperature 100)
 (print temperature)
 
@@ -21,6 +25,9 @@
     (setf p (read))
     (print (append '(ok the name is) (list p))) p)
 
+;;;; =========================================================================
+;;;; FORMAT
+;;;;==========================================================================
 ;; Replace "print" and "append" with "format"
 (let ((p nil))
     (format t "~% Please type a name: ")
@@ -41,3 +48,27 @@
 (format t "~%The next patient is ~a." *name*)
 (format t "~%Patient ~a presented ~a symptoms ~a." *name* (length *symptoms*) *symptoms*)
 
+;;;; =========================================================================
+;;;; EVAL
+;;;;==========================================================================
+
+(defparameter form-to-evaluate '(+ 2 2))
+(print (eval form-to-evaluate))
+(print (read)) (+ 2 2)
+(print (eval (read))) (+ 2 2)
+
+;;;; =========================================================================
+;;;; Special Primitives Manipulate Strings and Characters
+;;;;==========================================================================
+
+(format t "~A~%" (length '(a b c)))
+(format t "~A~%" (length "abc"))
+(format t "~A~%" (reverse '(a b c)))
+(format t "~A~%" (reverse "a b c"))
+(format t "~A~%" (elt '(a b c) 0))
+(format t "~A~%" (elt '(a b c) 2))
+(format t "~A~%" (elt "abc" 0))
+(format t "~A~%" (elt "abc" 2))
+(format t "~A~%" (string= "abc" "xyz"))
+(format t "~A~%" (string= "abc" "abc"))
+(format t "~A~%" (string= "abc" "ABC"))
