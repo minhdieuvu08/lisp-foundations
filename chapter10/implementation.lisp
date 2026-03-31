@@ -55,7 +55,7 @@
 (defun current (n)
     (+ (minus-one n) (minus-two n)))
 
-(format t "~A~%" (current 6))
+; (format t "~A~%" (current 6))
 (format t "~A~%" (trace current minus-one minus-two))
 (format t "~A~%" (untrace minus-one minus-two))
 
@@ -66,14 +66,20 @@
             (count-atoms (rest expression))))))
 (format t "~A~%" (count-atoms '((this is) (a test))))
 
+; (defun current (n)
+;     (if (= n 1) ;; Bug
+;         1
+;         (+ (minus-one n) (minus-two n))))
+; (defun minus-one (n)
+;     (when (< (- n 1) 1) (break "N is too small in MINUS-ONE"))
+;     (current (- n 1)))
+; (defun minus-two (n)
+;     (when (< (- n 2) 1) (break "N is too small in MINUS-TWO"))
+;     (current (- n 2)))
+
 (defun current (n)
-    (if (= n 1)
+    (if (<= n 1) 
         1
         (+ (minus-one n) (minus-two n))))
 
-(defun minus-one (n)
-    (when (< (- n 1) 1) (break "N is too small in MINUS-ONE"))
-    (current (- n 1)))
-(defun minus-two (n)
-    (when (< (- n 2) 1) (break "N is too small in MINUS-TWO"))
-    (current (- n 2)))
+(format t "~A~%" (current 6))
