@@ -37,3 +37,43 @@
             (move object support)
             (ungrasp object))
         (format t "~&Sorry, there is no room for ~a on ~a" object support)))
+
+(defun count-atoms (expression)
+    (if (atom expression)
+        1
+        (+ (count-atoms (first expression))
+            (count-atoms (rest expression)))))
+(format t "~A~%" (count-atoms '((this is) (a test))))
+(format t "~A~%" (trace count-atoms))
+
+(defun minus-one (n)
+    (current (- n 1)))
+
+(defun minus-two (n)
+    (current (- n 2)))
+
+(defun current (n)
+    (+ (minus-one n) (minus-two n)))
+
+(format t "~A~%" (current 6))
+(format t "~A~%" (trace current minus-one minus-two))
+(format t "~A~%" (untrace minus-one minus-two))
+
+(defun count-atoms (expression)
+    (cond ((atom expression) 1)
+        ((null expression) 0)
+        (t (+ (count-atoms (first expression))
+            (count-atoms (rest expression))))))
+(format t "~A~%" (count-atoms '((this is) (a test))))
+
+(defun current (n)
+    (if (= n 1)
+        1
+        (+ (minus-one n) (minus-two n))))
+
+(defun minus-one (n)
+    (when (< (- n 1) 1) (break "N is too small in MINUS-ONE"))
+    (current (- n 1)))
+(defun minus-two (n)
+    (when (< (- n 2) 1) (break "N is too small in MINUS-TWO"))
+    (current (- n 2)))
