@@ -46,6 +46,14 @@
 (format t "~A~%" (count-atoms '((this is) (a test))))
 (format t "~A~%" (trace count-atoms))
 
+;(step (count-atoms nil))
+(defun count-atoms (expression)
+    (cond ((atom expression) 1)
+        ((null expression) 0)
+        (t (+ (count-atoms (first expression))
+            (count-atoms (rest expression))))))
+(format t "~A~%" (count-atoms '((this is) (a test))))
+
 (defun minus-one (n)
     (current (- n 1)))
 
@@ -58,13 +66,6 @@
 ; (format t "~A~%" (current 6))
 (format t "~A~%" (trace current minus-one minus-two))
 (format t "~A~%" (untrace minus-one minus-two))
-
-(defun count-atoms (expression)
-    (cond ((atom expression) 1)
-        ((null expression) 0)
-        (t (+ (count-atoms (first expression))
-            (count-atoms (rest expression))))))
-(format t "~A~%" (count-atoms '((this is) (a test))))
 
 ; (defun current (n)
 ;     (if (= n 1) ;; Bug
@@ -83,3 +84,26 @@
         (+ (minus-one n) (minus-two n))))
 
 (format t "~A~%" (current 6))
+
+;;;; ============================================================
+;;;; TIME, DESCRIBE and DRIBBLE
+;;;; ============================================================
+;; Time
+(format t "Time: ~A~%" (time (current 6)))
+(format t "Time: ~A~%" (time (current 12)))
+
+;; Describe
+(defparameter symbol-example '(a b c))
+(format t "~A~%" (describe 'symbol-example))
+(defun procedure-example (x) (another-procedure x))
+(format t "~A~%" (describe 'procedure-example))
+
+;; Dribble
+(dribble "c10_log.txt")
+(format t "Start recording ~%")
+(format t "Result of count-atoms: ~A~%" (count-atoms '((a b) c)))
+
+(trace current)
+(current 3)
+(dribble)
+(format t "Stop recording the session ~%")
