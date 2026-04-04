@@ -61,6 +61,30 @@
 (print (eval (read))) (+ 2 2)
 
 ;;;; =========================================================================
+;;;; WITH-OPEN-FILE
+;;;;==========================================================================
+(with-open-file (patient-stream "/home/minh/lisp-foundations/chapter09/patients.lisp" :direction :input)
+    (dotimes (n 2) (print (read patient-stream))))
+
+(read patient-stream nil)
+
+(with-open-file (patient-stream "/home/minh/lisp-foundations/chapter09/patients.lisp" :direction :input)
+    (do ((patient (read patient-stream nil)
+            (read patient-stream nil)))
+        ((not patient))
+        (print patient)))
+
+(defun nauseated-p (description)
+    (member 'nausea (second description)))
+    
+(with-open-file (patient-stream "/home/minh/lisp-foundations/chapter09/patients.lisp" :direction :output)
+    (do ((patient-description (read patient-stream nil)
+                                (read patient-stream nil)))
+        ((not patient-descripton))
+    (when (nauseated-p patient-description)
+        (print patient-description nausea-stream))))
+
+;;;; =========================================================================
 ;;;; Special Primitives Manipulate Strings and Characters
 ;;;;==========================================================================
 
