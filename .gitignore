@@ -1,0 +1,8 @@
+*.fasl
+*.fas
+*.lib
+*~
+\#*\#
+.#*
+.DS_Store
+Thumbs.db
