@@ -207,12 +207,33 @@
 ;;;; =========================================================================
 ;;;; MAPCAR, REMOVE-IF, REMOVE-IF-NOT, COUNT-IF and COUNTING
 ;;;;==========================================================================
+
+;; 'mapcar' apply a function to each element of 1 or more lists 
+;; and return a new list of the results.
+;; (mapcar #'<func> <list1> <list2> ...)
 (format t "~A~%" (mapcar #'oddp '(1 2 3)))
 (format t "~A~%" (mapcar #'= '(1 2 3) '(3 2 1)))
 (format t "~A~%" (mapcar #'book-author books))
+
+;; 'remove-if' return a list containing all elements 
+;; except those that satisfy the predicate.
+;; (remove-if #'<predicate> <list>)
 (format t "~A~%" (remove-if-not #'fictionp books))
+
+;; 'remove-if-not' return a list containing only the elements 
+;; that satisfy the predicate. 
+;; (remove-if-not #'<predicate> <list>)
 (format t "~A~%" (remove-if #'fictionp books))
+
+;; 'count-if' return the number of elements in a list 
+;; that satisfy a specific predicate.
+;; (count-if #'<predicate> <list>)
 (format t "~A~%" (count-if #'fictionp books))
+
+;; 'find-if' return the first element in the list
+;; that satisfies the predicate.
+;; return NIL if no such element is found
+;; (find-if #'<predicate> <list>)
 (format t "~A~%" (find-if #'fictionp books))
 
 ;;;; =========================================================================
@@ -237,8 +258,7 @@
 (apply #'+ 1 2 3 '(4 5 6))
 
 (defun toss (argument procedure) 
-    (apply procedure (list argument))
-)
+    (apply procedure (list argument)))
 ;;;; =========================================================================
 ;;;; LAMBDA
 ;;;;==========================================================================
