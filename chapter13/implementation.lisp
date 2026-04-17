@@ -48,4 +48,15 @@
 (format t "~A~%" (employee-payment *hacker-example*))
 (format t "~A~%" (hacker-preferred-language *hacker-example*))
 
-(defstruct (salesperson (:include employee (payment 'commission ))))
+(defstruct (salesperson (:include employee (payment 'commission)))
+    (preferred-car 'mercedes))
+
+(defparameter *salesperson-example* (make-salesperson))
+(format t "~A~%"(employee-payment *hacker-example*))
+(format t "~A~%" (employee-payment *salesperson-example*))
+
+;;;; ============================================================
+;;;; DESCRIBE
+;;;; ============================================================
+(describe *person-instance-1*)
+(describe *person-instance-2*)
