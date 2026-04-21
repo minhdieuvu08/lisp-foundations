@@ -4,6 +4,9 @@
 ; ;;; Author: Patrick Henry Winston and Berthold Klaus Paul Horn
 ; ;;; ============================================================
 
+;;;; ============================================================
+;;;; Data Driven Approach with Structures
+;;;; ============================================================
 (defstruct triangle
     (base 0)
     (altitude 0))
@@ -38,6 +41,9 @@
 (defun circle-area (figure)
     (* pi (expt (circle-radius figure) 2)))
 
+;;;; ============================================================
+;;;; Using DEFMETHOD with Structures
+;;;; ============================================================
 ; (defun area (figure)
 ;     (cond ((triangle-p figure) (triangle-area figure))
 ;             ((rectangle-p figure) (rectangle-area figure))
@@ -62,6 +68,9 @@
 (format t "Rectangle are: ~A~%" (area *rectangle*))
 (format t "Circle area: ~A~%" (area *circle*))
 
+;;;; ============================================================
+;;;; Classes Resemble Structure Types
+;;;; ============================================================
 (defclass article ()
     ((title :accessor article-title :initarg :title)
     (author :accessor article-author :initarg :author)))
@@ -75,3 +84,73 @@
 (defclass hacker-friend (friend) ())
 (defclass entrepreneur-friend (friend) ())
 (defclass philosopher-friend (friend) ())
+
+(defparameter *articles*
+    (list (make-instance 'business-article
+                            :title "Memory Prices Down")
+            (make-instance 'computer-article 
+                            :title "Memory Speed Up")
+            (make-instance 'political-article
+                            :title "Memory Impugned")))
+
+(defparameter *friends* 
+    (list (make-instance 'hacker-friend :name 'Dan)
+            (make-instance 'hacker-friend :name 'Gerry)
+            (make-instance 'entrepreneur-friend :name 'Philip)
+            (make-instance 'philosopher-friend :name 'David)))
+
+;;;; ============================================================
+;;;; Classes Enable Method Inheritance
+;;;; ============================================================
+(defun print-notification (article friend)
+    (format t "~%Tell ~a about \"~a.\""
+            (friend-name friend) 
+            (article-title article)) t)
+
+(defmethod process ((friend hacker-friend)
+                    (article computer-article))
+    (print-notification article friend))
+
+(defmethod process ((friend entrepreneur-friend)
+                    (article business-article))
+    (print-notification article friend))
+
+(defmethod process ((friend philosopher-friend)
+                    (article article))
+    (print-notification article friend))
+
+(defmethod process ((friend friend) (article article)))
+(defmethod process ((friend t) (article t)))
+(defmethod process (friend article))
+
+(dolist (friend *friends*) 
+    (dolist (article *articles*) 
+        (print-notification article friend)))
+
+(dolist (friend *friends*) 
+    (dolist (article *articles*) 
+        (process friend article)))
+;;;; ============================================================
+;;;; The Most Specific Method Takes Precedence
+;;;; (Specializing Subclasses)
+;;;; ============================================================
+(defclass stocks-article (business-article) ())
+(defclass :new-stocks-article (stocks-article) ())
+
+(defmethod process ((friend entrepreneur-friend)
+                    (article stocks-article)))
+(defmethod process ((friend entrepreneur-friend)
+                    (article :new-stocks-article))
+    (print-notification article friend))
+
+(process (make-instance 'entrepreneur-friend :name 'jack)
+        (make-instance 'stocks-article :title "Stock Prices Up"))
+
+(process (make-instance 'entrepreneur-friend :name 'jill)
+            (make-instance ':new-stocks-article :title "New-Stock Prices Up"))
+
+(defclass retired-hacker-friend (hacker-friend) ())
+
+(defmethod process ((friend retired-hacker-friend)
+                    (article business-article))
+    (print-notification article))
