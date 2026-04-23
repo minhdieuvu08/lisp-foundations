@@ -130,6 +130,7 @@
 (dolist (friend *friends*) 
     (dolist (article *articles*) 
         (process friend article)))
+
 ;;;; ============================================================
 ;;;; The Most Specific Method Takes Precedence
 ;;;; (Specializing Subclasses)
@@ -153,4 +154,40 @@
 
 (defmethod process ((friend retired-hacker-friend)
                     (article business-article))
-    (print-notification article))
+    (print-notification article friend))
+
+(defmethod process ((friend hacker-friend)
+                    (article stocks-article)))
+
+(process (make-instance 'retired-hacker-friend :name 'test-friend)
+        (make-instance 'stocks-article :title "Test Article"))
+
+;;;; ============================================================
+;;;; Simple Rules Approximate the Complicated Class Precedence Algorithm
+;;;; ============================================================
+(defclass computer-political-article 
+    (computer-article political-article) ())
+
+(defmethod process ((friend hacker-friend)
+                    (article computer-article))
+    (print-notification article friend))
+
+(defmethod process ((friend hacker-friend)
+                    (article political-article)))
+
+(process
+    (make-instance 'hacker-friend :name 'test-friend)
+    (make-instance 'computer-political-article 
+                    :title "Computer Politics Article Test"))
+
+(process
+    (make-instance 'hacker-friend :name 'test-friend)
+    (make-instance 'computer-political-article
+                    :title "Computer Politics Article Test"))
+
+;;;; ============================================================
+;;;; Methods Can Be Specialized to Individual Instances
+;;;; ============================================================
+(defparameter philip (third *friends*))
+(defmethod process ((friend (eql philip))
+                    (article article)))
