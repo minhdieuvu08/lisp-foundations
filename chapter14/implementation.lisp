@@ -99,6 +99,13 @@
             (make-instance 'entrepreneur-friend :name 'Philip)
             (make-instance 'philosopher-friend :name 'David)))
 
+; More examples
+(defgeneric description (object)
+    (:documentation "Return a description of an object."))
+
+(defmethod description ((object integer))
+    (format t "The integer is ~D~%" object))
+(description 5)
 ;;;; ============================================================
 ;;;; Classes Enable Method Inheritance
 ;;;; ============================================================
