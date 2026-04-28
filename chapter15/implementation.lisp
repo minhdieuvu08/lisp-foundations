@@ -26,3 +26,23 @@
 (defun first-of-first-with-labels (lst)
     (labels ((aux (m) (first m)))
         (first (aux lst))))
+
+(format t "~A~%" (first-of-first-with-labels '((a b) (c d))))
+
+(defun first-of-first-with-funny-labels (lst)
+    (labels ((aux () (first lst)))
+        (first (aux))))
+
+(defun inside (x e)
+    (labels 
+        ((inside-aux (e)
+            (cond ((atom e) (eq x e))
+                    ((endp e) nil)
+                    (t (or (inside-aux (first e))
+                            (inside-aux (rest e)))))))
+        (insdie-aux e)))
+
+(defparameter previous-power-of-two 1)
+(defun previous-power-of-two ()
+    (setf previous-power-of-two (* previous-power-of-two 2)))
+(format t "~A~%" (power-of-two))
