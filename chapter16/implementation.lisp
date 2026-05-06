@@ -54,9 +54,9 @@
 (defvar *interest-rate* .08)
 (format t "Interest rate 2: ~A~%" *interest-rate*)
 
-;; In this example, I don't 'defvar *mpg*'
-;; but in first function, 'mpg' is a special variable
-;; so that why the function won't work
+;; In the following case, I don't use 'defvar *mpg*'
+;; but in the first function, 'mpg' is a special variable
+;; that is why the function cannot see its value.
 ; (defun compute-distance (gallons)
 ;     (* mpg gallons))
 
@@ -65,6 +65,7 @@
 
 ; (format t "~A~%" (time-custom 25 10 50)) ;; ERROR
 
+;; Now declaring *mpg* as special
 (defvar *mpg*)
 (defun compute-distance (gallons)
     (* *mpg* gallons))
