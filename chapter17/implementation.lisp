@@ -23,3 +23,27 @@
 (setf tosses '(heads tails tails heads tails))
 (format t "Result after remove heads: ~A~%" (remove 'heads tosses))
 (format t "tosses: ~A~%" tosses)
+
+(format t "~A~%" (delete '(heads tails) '((alpha omega) (heads tails) (zenith nadir))))
+(format t "~A~%" (delete '(heads tails) '((alpha omega) (heads tails) (zenith nadir)) :test #'equal))
+(format t "~A~%" (remove '(heads tails) '((alpha omega) (heads tails) (zenith nadir))))
+
+(format t "~A~%" (remove '(heads tails) 
+                            '((alpha omega) (heads tails) (zenith nadir)) 
+                            :test #'equal))
+
+(defparameter *fact1* '(big computers are nice))
+(setf (first *fact1*) 'fast)
+(format t "~A~%" *fact1*)
+
+(defparameter *fact2* '(apple are good for you))
+(setf (rest *fact2*) '(were bad for adam))
+(format t "fact2 ~A~%" *fact2*)
+
+;;(defparameter *fact3* '(circle))
+;;(setf (rest *fact3*) *fact3*)
+;;(format t "fact3 ~A~%" *fact3*)
+
+(defparameter *l1* (list 'a 'b 'c))
+(defparameter *l2* (list 'a 'b 'c))
+(defparameter *l3* *l2*)
