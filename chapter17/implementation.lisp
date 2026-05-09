@@ -47,3 +47,41 @@
 (defparameter *l1* (list 'a 'b 'c))
 (defparameter *l2* (list 'a 'b 'c))
 (defparameter *l3* *l2*)
+
+(defparameter example2 (list 'a 'b 'c))
+(defparameter example2 (list 'x 'y 'z))
+
+(defun user-reverse (lst)
+    (if (endp lst)
+        nil
+        (append (user-reverse (rest lst))
+                (list (first lst)))))
+
+(defun user-reverse (lst &optional result)
+    (if (endp lst)
+        result
+        (user-reverse (rest lst)
+                        (cons (first lst) result))))
+
+(defun liberate1 (s)
+    (cond ((eq s 'man) 'person)
+            ((atom s) s)
+            (t (cons (liberatel (first s))
+                    (liberate1 (rest s))))))
+
+(defun liberate2 (s)
+    (cond ((eq s 'man) 'person)
+            ((atom s) s)
+            ((eq (first s) 'man)
+            (setf (first s) 'person)
+            (liberate2 (rest s)))
+            (t (liberate2 (first s))
+                (liberate2 (rest s))
+                s)))
+
+(defparameter *test* '(chair man))
+(format t "liberate1 example: ~A~%" (liberate1 *test*))
+(format t "test: ~A~%" *test*)
+
+(format t "liberate2 example: ~A~%" (liberate2 *test*))
+(format t "test: ~A~%" *test*)
