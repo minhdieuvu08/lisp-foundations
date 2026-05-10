@@ -66,7 +66,7 @@
 (defun liberate1 (s)
     (cond ((eq s 'man) 'person)
             ((atom s) s)
-            (t (cons (liberatel (first s))
+            (t (cons (liberate1 (first s))
                     (liberate1 (rest s))))))
 
 (defun liberate2 (s)
@@ -85,3 +85,21 @@
 
 (format t "liberate2 example: ~A~%" (liberate2 *test*))
 (format t "test: ~A~%" *test*)
+
+(defparameter *memory* (make-array 40 :initial-contents
+    '(free     unmarked nil      4   ;Elements 0-3.
+      free     unmarked nil      8   ;Elements 4-7.
+      free     unmarked nil      12  ;Elements 8-11.
+      free     unmarked nil      16  ;Elements 12-15.
+      free     unmarked nil      20  ;Elements 16-19.
+      free     unmarked nil      24  ;Elements 20-23.
+      free     unmarked nil      28  ;Elements 24-27.
+      free     unmarked nil      32  ;Elements 28-31.
+      free     unmarked nil      36  ;Elements 32-35.
+      free     unmarked nil      nil ;Elements 36-39.\
+    )))
+
+(defparameter *next-free-chunk* 0)
+(defparameter *last-free-chunk* 36)
+
+(format t "memory: ~A~%" *memory*)
