@@ -99,7 +99,17 @@
       free     unmarked nil      nil ;Elements 36-39.\
     )))
 
+;; 'next-free-chunk' is the address of the first element of the first free chunk.
+;; 'last-free-chunk' is the address of the first element of the last free chunk.
 (defparameter *next-free-chunk* 0)
 (defparameter *last-free-chunk* 36)
 
+(format t "memory: ~A~%" *memory*)
+(format t "next free chunk: ~A~%" *next-free-chunk*)
+(format t "last free chunk: ~A~%" *last-free-chunk*)
+
+(setf (aref *memory* 0) 'symbol)
+(setf (aref *memory* 1) 'unmarked)
+(setf (aref *memory* 2) 'x)
+(setf *next-free-chunk* 4)
 (format t "memory: ~A~%" *memory*)
