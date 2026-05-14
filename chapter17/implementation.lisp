@@ -112,4 +112,24 @@
 (setf (aref *memory* 1) 'unmarked)
 (setf (aref *memory* 2) 'x)
 (setf *next-free-chunk* 4)
-(format t "memory: ~A~%" *memory*)
+(format t "~%memory: ~A~%" *memory*)
+
+;; Mark
+(defun place-marks (index)
+    (when (numberp index)
+        (unless (eq 'marked (aref *memory* (+ 1 index)))
+            (setf (aref *memory* (+ 1 index)) 'marked)
+            (when (eq 'box (aref *memory* index))
+                (place-marks (aref *memory* (+ 2 index)))
+                (place-marks (aref *memory* (+ 3 index)))))))
+
+(defun mark ()
+    (do ((index 0 (+ 4 index)))
+        ((= index (array-dimension *memory* 0)))
+        (when (and (eq 'symbol (aref *memory* index))
+                    (not (eq 'unbound (aref *memory* (+ 3 index)))))
+            (setf (aref *memory* (+ 1 index)) 'marked)
+            (place-marks (aref *memory* (+ 3 index))))))
+
+(mark)
+(format t "~%memory after mark: ~A~%" *memory*)
