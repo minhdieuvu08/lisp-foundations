@@ -1,5 +1,5 @@
 ;;;; ============================================================
-;;;; Chapter 17 - Problem 17-2
+;;;; Chapter 17 - Problem 17-3
 ;;;; Source: LISP - Patrick Henry Winston and Berthold Klaus Paul Horn
 ;;;; ============================================================
 
