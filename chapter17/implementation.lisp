@@ -133,3 +133,27 @@
 
 (mark)
 (format t "~%memory after mark: ~A~%" *memory*)
+
+;;  SWEEP
+(defun sweep ()
+    (do ((index 0 (+ 4 index)))
+        ;; Stop casconditione: When the index reaches the end of the memory array.
+        ((= index (array-dimension *memory* 0)))
+
+        ;; If the box is not free and not marked,
+        (unless (or (eq 'free (aref *memory* index))
+                    (eq 'marked (aref *memory* (+ 1 index))))
+            
+            ;; First, set the box to free and clear its pointers (car/cdr)
+            (setf (aref *memory* index) 'free)
+            (setf (aref *memory* (+ 2 index)) nil)
+            (setf (aref *memory* (+ 3 index)) nil)
+
+            ;; Second, update the free list
+            (setf (aref *memory* (+ 3 *last-free-chunk*)) index)
+            (setf *last-free-chunk* index))
+        
+        ;; Finally, set the status of all index to unmarked
+        (setf (aref *memory* (+ 1 index)) 'unmarked)))
+(sweep)
+(format t "~%memory after sweep: ~A~%" *memory*)
