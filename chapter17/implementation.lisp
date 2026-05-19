@@ -149,7 +149,7 @@
             (setf (aref *memory* (+ 2 index)) nil)
             (setf (aref *memory* (+ 3 index)) nil)
 
-            ;; Second, update the free list
+            ;; Second, protected-formupdate the free list
             (setf (aref *memory* (+ 3 *last-free-chunk*)) index)
             (setf *last-free-chunk* index))
         
@@ -157,3 +157,49 @@
         (setf (aref *memory* (+ 1 index)) 'unmarked)))
 (sweep)
 (format t "~%memory after sweep: ~A~%" *memory*)
+
+(defun collect-garbage () (mark) (sweep))
+(collect-garbage)
+(format t "~%memory: ~A~%" *memory*)
+
+(defun nr-place-marks 
+    (last-chunk this-chunk &aux next-chunk (direction 'down))
+    (loop
+        (case (aref *memory* this-chunk)
+            (box
+                (case direction
+                    (down (setf next-chunk (aref *memory* (+ 2 this-chunk)))
+                            (setf (aref *memory* (+ 2 this-chunk)) last-chunk))
+                    (up 
+                        (case (aref *memory* (+ 1 this-chunk))
+                            (unmarked 
+                                (setf (aref *memory* (+ 1 this-chunk)) 'marked)
+                                (setf next-chunk (aref *memory* (+ 3 this-chunk)))
+                                (setf (aref *memory* (+ 3 this-chunk))
+                                        (aref *memory* (+ 2 this-chunk)))
+                                (setf (aref *memory* (+ 2 this-chunk)) last-chunk)
+                                (setf direction 'down))
+                            (marked
+                                (setf next-chunk (aref *memory* (+ 3 this-chunk)))
+                                (setf (aref *memory* (+ 3 this-chunk)) last-chunk)
+                                (setf direction 'up))))))
+            (symbol 
+                (case direction
+                    (down (setf (aref *memory* (+ 1 this-chunk)) 'marked)
+                            (setf next-chunk last-chunk)
+                            (setf direction 'up))
+                    (up (return)))))
+        (when next-chunk
+            (setf last-chunk this-chunk
+                this-chunk next-chunk))))
+
+(defun nr-mark ()
+    (do ((index 0 (+ 4 index)))
+        ((= index (array-dimension *memory* 0)))
+        (when (and (eq  'symbol (aref *memory* index))
+                    (not (eq 'unbound (aref *memory* (+ 3 index)))))
+            (setf (aref *memory* (+ 1 index)) 'marked)
+            (nr-place-marks index (aref *memory* (+ 3 index))))))
+
+(nr-mark)
+(format t "~%memory: ~A~%" *memory*)
