@@ -4,6 +4,9 @@
 ; ;;; Author: Patrick Henry Winston and Berthold Klaus Paul Horn
 ; ;;; ============================================================
 
+;;;; ============================================================
+;;;; APPEND
+;;;; ============================================================
 (defparameter *abc* '(a b c))
 (defparameter *xyz* '(x y z))
 (defparameter *bc* (rest *abc*))
@@ -14,12 +17,16 @@
 (format t "bc: ~A~%" *bc*)
 (format t "yz: ~A~%" *yz*)
 
-;; DELETE
+;;;; ============================================================
+;;;; DELETE
+;;;; ============================================================
 (defparameter tosses '(heads tails tails heads tails))
 (format t "Result after delete heads: ~A~%" (delete 'heads tosses))
 (format t "tosses: ~A~%" tosses)
 
-;; REMOVE
+;;;; ============================================================
+;;;; REMOVE
+;;;; ============================================================ 
 (setf tosses '(heads tails tails heads tails))
 (format t "Result after remove heads: ~A~%" (remove 'heads tosses))
 (format t "tosses: ~A~%" tosses)
@@ -44,19 +51,28 @@
 ;;(setf (rest *fact3*) *fact3*)
 ;;(format t "fact3 ~A~%" *fact3*)
 
+;;;; ============================================================
+;;;; EQ only check pointers
+;;;; ============================================================ 
 (defparameter *l1* (list 'a 'b 'c))
 (defparameter *l2* (list 'a 'b 'c))
 (defparameter *l3* *l2*)
+(format t "equal l1 and l2: ~A~%" (equal *l1* *l2*))
+(format t "equal l2 and l3: ~A~%" (equal *l2* *l3*))
+(format t "eq l1 and l2: ~A~%" (eq *l1* *l2*))
+(format t "eq l2 and l3: ~A~%" (eq *l2* *l3*))
 
 (defparameter example2 (list 'a 'b 'c))
 (defparameter example2 (list 'x 'y 'z))
 
-(defun user-reverse (lst)
-    (if (endp lst)
-        nil
-        (append (user-reverse (rest lst))
-                (list (first lst)))))
+;; If there are n elements, this function recurses n times.
+; (defun user-reverse (lst)
+;     (if (endp lst)
+;         nil
+;         (append (user-reverse (rest lst))
+;                 (list (first lst)))))
 
+;; Rewrite
 (defun user-reverse (lst &optional result)
     (if (endp lst)
         result
@@ -86,6 +102,9 @@
 (format t "liberate2 example: ~A~%" (liberate2 *test*))
 (format t "test: ~A~%" *test*)
 
+;;;; ============================================================
+;;;; Simulation Procedures Expose Garbage Collection Details
+;;;; ============================================================ 
 (defparameter *memory* (make-array 40 :initial-contents
     '(free     unmarked nil      4   ;Elements 0-3.
       free     unmarked nil      8   ;Elements 4-7.
@@ -114,11 +133,14 @@
 (setf *next-free-chunk* 4)
 (format t "~%memory: ~A~%" *memory*)
 
-;; Mark
+;; Recursive Mark
 (defun place-marks (index)
     (when (numberp index)
+        ;; check if block is marked or not
         (unless (eq 'marked (aref *memory* (+ 1 index)))
             (setf (aref *memory* (+ 1 index)) 'marked)
+
+            ;; if the block in memory is 'box' then recursively traverse CAR and CDR
             (when (eq 'box (aref *memory* index))
                 (place-marks (aref *memory* (+ 2 index)))
                 (place-marks (aref *memory* (+ 3 index)))))))
@@ -137,7 +159,7 @@
 ;;  SWEEP
 (defun sweep ()
     (do ((index 0 (+ 4 index)))
-        ;; Stop casconditione: When the index reaches the end of the memory array.
+        ;; Stop condition: When the index reaches the end of the memory array.
         ((= index (array-dimension *memory* 0)))
 
         ;; If the box is not free and not marked,
@@ -149,11 +171,11 @@
             (setf (aref *memory* (+ 2 index)) nil)
             (setf (aref *memory* (+ 3 index)) nil)
 
-            ;; Second, protected-formupdate the free list
+            ;; Second, update the free list
             (setf (aref *memory* (+ 3 *last-free-chunk*)) index)
             (setf *last-free-chunk* index))
         
-        ;; Finally, set the status of all index to unmarked
+        ;; Finally, reset the status of the current block to unmarked
         (setf (aref *memory* (+ 1 index)) 'unmarked)))
 (sweep)
 (format t "~%memory after sweep: ~A~%" *memory*)
@@ -168,8 +190,10 @@
         (case (aref *memory* this-chunk)
             (box
                 (case direction
+                    ;; Moving DOWN: Explore CAR/CDR while reversing pointers to save the path.
                     (down (setf next-chunk (aref *memory* (+ 2 this-chunk)))
                             (setf (aref *memory* (+ 2 this-chunk)) last-chunk))
+                    ;; Moving UP: return and backtrack
                     (up 
                         (case (aref *memory* (+ 1 this-chunk))
                             (unmarked 
