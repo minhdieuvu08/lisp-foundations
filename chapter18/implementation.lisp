@@ -26,6 +26,9 @@
                     (mapcar #'(lambda (x) (micro-eval x environment))
                             (rest form)))))))
 
+(defun bind-variables (variables values &optional environment)
+  (append (mapcar #'list variables values) environment))
+
 (defun micro-apply (procedure argument-values)
     (if (symbolp procedure)
         (case procedure
@@ -69,6 +72,7 @@
 
 (format t "~A~%" (micro-eval '(m-append (m-quote (a b c)) (m-quote (x y z)))))
 
+;; Evaluate Form 
 (defun micro-eval (form &optional environment)
     (if (atom form)
         (cond ((numberp form) form)
@@ -83,7 +87,7 @@
             (m-if (if (micro-eval (second form) environment)
                         (micro-eval (third form) environment)
                         (micro-eval (fourth form) environment)))
-            (m -apply 
+            (m-apply 
                 (micro-apply 
                     (micro-eval (second form) environment)
                     (micro-eval (third form) environment)))
@@ -127,7 +131,7 @@
             (m-endp (endp (first argument-values)))
             (m-not (not (first argument-values)))
             (m-eq (eq (first argument-values)
-                    (second argument-values)
+                    (second argument-values)))
             (t (let ((procedure-description (get procedure 'm-lambda)))
                     (if procedure-description
                         (micro-apply procedure-description argument-values)
@@ -141,18 +145,42 @@
                                             argument-values)))
             (m-closure
                 (micro-eval (third procedure)
-                            (bind-varibles (second procedure)
+                            (bind-variables (second procedure)
                                             argument-values
-                                            (fourth procedure)))))))))
+                                            (fourth procedure)))))))
 
+(format t "~A~%" (micro-eval '(m-first (m-quote (a b c)))))
 (defun micro-eval (form &optional environment)
     (if (atom form)
         (cond ((numberp form) form)
-                ((eq t form) t)
-                ((eq nil form) nil)
-                (t (let ((binding (assoc form environment)))
-                        (if binding
-                            (second binding)
-                            (error "I could find no variable binding for ~a." form)))))
+            ((eq t form) t)
+            ((eq nil form) nil)
+            (t (let ((binding (assoc form environment)))
+                (if binding 
+                    (second binding)
+                    (error "I could find no variable binding for ~a." form)))))
         (case (first form)
-            (m-quote (second form)))))
+            (m-quote (second form))
+            (m-if (if (micro-eval (second form) environment)
+                        (micro-eval (third form) environment)
+                        (micro-eval (fourth form) environment)))
+            (m-apply 
+                (micro-apply 
+                    (micro-eval (second form) environment)
+                    (micro-eval (third form) environment)))
+            (m-function ;; <-- THÊM NHÁNH NÀY ĐỂ TẠO CLOSURE
+                (list 'm-closure (second form) environment))
+            (t (micro-apply
+                    (first form)
+                    (mapcar #'(lambda (x) (micro-eval x environment))
+                            (rest form)))))))
+                            
+(micro-eval '(m-apply 
+                (m-function
+                    (m-lambda (x y)
+                        (m-apply
+                            (m-function 
+                                (m-lambda ()
+                                    (m-cons x (m-cons y nil))))
+                        (m-quote ()))))
+                (m-quote (a b))))
