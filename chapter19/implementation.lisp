@@ -1,5 +1,5 @@
 ; ;;; ============================================================
-; ;;; Chapter 19 - Classes and Generic Functions
+; ;;; Chapter 19 - Examples involving Search
 ; ;;; Book: LISP - 3rd Edition
 ; ;;; Author: Patrick Henry Winston and Berthold Klaus Paul Horn
 ; ;;; ============================================================
