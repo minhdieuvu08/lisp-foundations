@@ -1,5 +1,5 @@
 ; ;;; ============================================================
-; ;;; Chapter 19 - Examples involving Search
+; ;;; Chapter 19 - Problem 19.1
 ; ;;; Book: LISP - 3rd Edition
 ; ;;; Author: Patrick Henry Winston and Berthold Klaus Paul Horn
 ; ;;; ============================================================
