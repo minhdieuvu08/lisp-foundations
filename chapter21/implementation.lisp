@@ -48,6 +48,27 @@
 (defvar *hand* (make-instance 'hand :name 'h1 :position '(0 0)))
 
 (defmethod put-on ((object movable-block) (support load-bearing-block))
-    (setf (block-position object) (block-position support))
-    (push object (block-support-for support))
-    (setf (block-supported-by object) support))
+    (if (get-space object support)
+        (and (grasp object)
+             (move object support)
+             (ungrasp object))
+    (format t "~&Sorry, there is no room for ~a on ~a."
+             (block-name object)
+             (block-name support))))
+
+(defmethod get-space ((object movable-block) (support basic-block))
+    (or (find-space object support)
+        (make-space object support)))
+
+(defmethod grasp ((object movable-block))
+    (unless (eq (hand-grasping *hand*) object)
+        (when (block-support-for object) (clear-top object))
+        (when (hand-grasping *hand*)
+            (get-rid-of (hand-grasping *hand*)))
+        (format t "~&Move hand to pick up ~a at location ~a."
+                (block-name object)
+                (top-location object))
+        (setf (hand-position *hand*) (top-location object))
+        (format t "~&Grasp ~a." (block-name object))
+        (setf (hand-grasping *hand*) object)) 
+    t)
