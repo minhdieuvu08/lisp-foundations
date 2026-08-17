@@ -4,8 +4,6 @@
 ; ;;; Author: Patrick Henry Winston and Berthold Klaus Paul Horn
 ; ;;; ============================================================
 
-(put-on b1 b2)
-
 (defclass basic-block ()
   ((name :accessor block-name :initarg :name)
    (width :accessor block-width :initarg :width)
@@ -72,3 +70,24 @@
         (format t "~&Grasp ~a." (block-name object))
         (setf (hand-grasping *hand*) object)) 
     t)
+
+(put-on b1 b2)
+
+(defmethod ungrasp ((object movable-block))
+    (when (block-supported-by object)
+        (format t "~&Ungrasp ~a." (block-name object))
+        (setf (hand-grasping *hand*) nil)
+        t))
+
+(defmethod get-rid-of ((object movable-block))
+    (put-on object table))
+
+(defmethod make-space ((object movable-block) (support basic-block))
+    (dolist (obstruction (block-support-for support))
+        (get-rid-of obstruction)
+        (let ((space (find-space object support)))
+            (when space (return space)))))
+
+(defmethod clear-top ((support load-bearing-block))
+    (dolist (obstacle (block-support-for support) t)
+        (get-rid-of obstacle)))
