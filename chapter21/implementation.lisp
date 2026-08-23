@@ -184,7 +184,7 @@
           (+ (second (block-position object))
              (block-height object))))
 
-(defmethod find-space ((object support)
+(defmethod find-space ((object movable-block) (support load-bearing-block))
     "Return a free place on top of SUPPORT that is wide enough for OBJECT.
 
      The top of the support is examined from left to right, one unit at
@@ -192,6 +192,8 @@
      already standing there. The result is the position the object would
      take, and it is nil when no such place exists."
     (dotimes (offset (+ 1 (- (block-width support) (block-width object))))
+        ;; left = x-coordinate of the support block + offset distance.
+        (let ((left (+ (first (block-position support)) offset)))
             (unless (find-if
                       #'(lambda (obstacle)
                           (let ((obstacle-left (first (block-position obstacle))))
@@ -201,6 +203,16 @@
                 (return (list left
                               (+ (second (block-position support))
                                  (block-height support))))))))
+
+(defun intersections-p (object offset base obstacles)
+    (dolist (obstacle obstacles)
+        (let* ((ls-proposed (+ offset base))
+                (rs-proposed (+ ls-proposed (block-width object)))
+                (ls-obstacle (first (block-position obstacle)))
+                (rs-obstacle (+ ls-obstacle (block-width obstacle))))
+            (unless (or (>= ls-proposed rs-obstacle)
+                        (<= rs-proposed ls-obstacle))
+                (return t)))))
 
 (defmethod move ((object movable-block) (support load-bearing-block))
     "Carry OBJECT across to SUPPORT and set it down there.
