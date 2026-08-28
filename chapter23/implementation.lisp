@@ -17,11 +17,11 @@
     ((input-a :accessor constraint-input-a)
     (input-b :accessor constraint-input-b)))
 
-(defclass not-box (binary-constraint))
+(defclass not-box (binary-constraint) ())
 
-(defclass or-box (binary-constraint))
+(defclass or-box (binary-constraint) ())
 
-(defclass and-box (binary-constraint))
+(defclass and-box (binary-constraint) ())
 
 (defmethod connect2 ((c constraint) (i assertion) (o assertion))
     (setf (constraint-input c) i)
@@ -85,3 +85,35 @@
         (propagate-via-assertion o constraint (+ la lb -1) (min ua ub))
         (propagate-via-assertion a constraint 0 (+ 1 (- uo lb)))
         (propagate-via-assertion b constraint 0 (+ 1 (- uo la)))))
+
+(defmethod propagate-via-assertion ((assertion assertion)
+                                    (source constraint)
+                                    lower upper)
+    (let* ((old-upper (assertion-upper-bound assertion))
+            (old-lower (assertion-lower-bound assertion))
+            (new-upper (max 0 (min old-upper upper)))
+            (new-lower (min 1 (max old-lower lower))))
+        (unless (= old-upper new-upper)
+            (setf (assertion-upper-bound assertion) new-upper))
+        (unless (= old-lower new-lower)
+            (setf (assertion-lower-bound assertion) new-lower))
+        (when (or (/= old-lower new-lower) (/= old-upper new-upper))
+            (format t "~%Constraint ~a has modified ~a's values:")
+            (format t "~%[~4,2f, ~4,2f] --> [~4,2f, ~4,2f]"
+                    (constraint-name source)
+                    (assertion-name assertion)
+                    old-lower old-upper
+                    new-lower new-upper)
+            (dolist (constraint (assertion-constraints assertion))
+                (propagate-via-box constraint)))))
+
+(defmethod initiate-propagation ((assertion assertion) lower upper)
+    (setf (assertion-upper-bound assertion) upper)
+    (setf (assertion-lower-bound assertion) lower)
+    (format t "~%You have started propagation from ~a with values:" 
+            (assertion-name assertion))
+    (format t "~%[~4,2f, ~4,2f]" lower upper)
+        (dolist (constraint (assertion-constraints assertion))
+            (propagate-via-box constraint)))
+
+(format t "~%~a" (initiate-propagation broker1 .25 .75))
