@@ -72,6 +72,36 @@
         bindings 
         'fail))
 
+(defun match-variable (p d bindings)
+    (let ((bingding (find-binding p bindings)))
+        (if binding
+            (match (extract-value binding) d bindings)
+            (add-binding p d bingdings))))
+
+(defun match-pieces (p d bindings)
+    (let ((result (match (first p) (first d) bindings)))
+        (if (eq 'fail result)
+            'fail 
+            (match (rest p) (rest d) result))))
+
+(defun match-simple (p d &optional bindings)
+    (cond ((and (atom p) (atom d))
+           (match-atoms p d bindings))
+          ((and (listp p) (eq '? (first p)))
+           (match-variable p d bindings))
+          ((and (listp p) (listp d))
+           (match-pieces p d bindings)) 
+        (t 'fail)))
+
+(defun elements-p (p d)
+    (and (atom p) (atom d)))
+
+(defun variable-p (p)
+    (and (listp p) (eq '? (first p))))
+
+(defun recursive-p (p d)
+    (and (listp p) (listp d)))
+    
 (format t "~a~%" (add-binding '(? x) 'apple '((y red))))
 (format t "~a~%" (add-binding '(? _) 'apple '((y red))))
 (format t "Example of find-binding (? x): ~a~%" (find-binding '(? x) '((x apple) (y red))))
