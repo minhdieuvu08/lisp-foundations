@@ -34,25 +34,41 @@
         (cons (list (second *pattern-variable-expression*) *datum*) *bindings*))
 
 (defun add-binding (pattern-variable-expression datum bindings)
+    "Bind the variable of PATTERN-VARIABLE-EXPRESSION to DATUM in BINDINGS.
+
+    Returns a new BINDINGS alist with the binding pushed onto the front.
+    The anonymous variable (? _) matches anything without being recorded,
+    so BINDINGS is returned unchanged for it."
     (if (eq '_ (extract-variable pattern-variable-expression))
         bindings
         (cons (make-binding
                 (extract-variable pattern-variable-expression) datum) bindings)))
 
 (defun extract-variable (pattern-variable-expression)
+    "Return the variable name held by PATTERN-VARIABLE-EXPRESSION.
+    Returns X for the pattern variable (? X)."
     (second pattern-variable-expression))
 
 (defun make-binding (variable datum)
+    "Return a binding pairing VARIABLE with DATUM.
+    The binding is the two-element list (VARIABLE DATUM)."
     (list variable datum))
 
 (defun find-binding (pattern-variable-expression binding)
+    "Look up the variable of PATTERN-VARIABLE-EXPRESSION in the alist BINDING.
+
+    Returns the matching binding, or NIL when the variable is unbound.
+    ADD-BINDING never records the anonymous variable (? _), so NIL is
+    returned for it without consulting BINDING."
     (unless (eq '_ (extract-variable pattern-variable-expression))
         (assoc (extract-variable pattern-variable-expression) binding)))
 
 (defun  extract-key (binding)
+    "Return the variable named by BINDING."
     (first binding))
 
 (defun extract-value (binding)
+    "Return the datum stored in BINDING."
     (second binding))
 
 (format t "~%--- Taking a pattern variable and a binding apart ---~%")
@@ -66,6 +82,24 @@
         (extract-value (make-binding 'x 'apple)))
 
 (defun match (p d &optional bindings)
+    "Match pattern P against datum D, binding pattern variables as needed.
+
+    Matching is one-way: only P may contain pattern variables of the form
+    (? VARIABLE). BINDINGS is the alist of bindings established so far,
+    which constrains every occurrence of a variable repeated in P to the
+    same datum.
+
+    The cases are tried in order:
+
+      * both atoms        -- succeed when P and D are EQL
+      * P is (? VARIABLE) -- follow the existing binding if there is one,
+                             otherwise bind VARIABLE to D
+      * both lists        -- match the first elements, then the rest under
+                             the bindings the first match produced
+      * otherwise         -- an atom against a list, which cannot match
+
+    Returns the extended BINDINGS alist on success, or the symbol FAIL when
+    P and D cannot be made to agree."
     (cond
         ((and (atom p) (atom d)) ;; check if the pattern and the datum are both atoms.
          (if (eql p d) bindings 'fail)) ;; If they are the same then return the current value of bindings else retun fail.
@@ -84,23 +118,44 @@
         (t 'fail)))
 
 (defun match-atoms (p d bindings)
+    "Match atom P against atom D.
+
+    Returns BINDINGS unchanged when P and D are EQL, otherwise the symbol
+    FAIL."
     (if (eql p d)
         bindings
         'fail))
 
 (defun match-variable (p d bindings)
+    "Match the pattern variable P against datum D.
+
+    When P is already bound in BINDINGS, its value is matched against D so
+    that every occurrence of the variable agrees. Otherwise P is bound to D.
+
+    Returns the extended BINDINGS alist, or the symbol FAIL when an existing
+    binding contradicts D."
     (let ((binding (find-binding p bindings)))
         (if binding
             (match (extract-value binding) d bindings)
             (add-binding p d bindings))))
 
 (defun match-pieces (p d bindings)
+    "Match the lists P and D element by element.
+
+    The first elements are matched under BINDINGS, and the bindings that
+    match produces are threaded into the match of the remaining elements.
+
+    Returns the extended BINDINGS alist, or the symbol FAIL as soon as any
+    pair of elements fails to match."
     (let ((result (match (first p) (first d) bindings)))
         (if (eq 'fail result)
             'fail
             (match (rest p) (rest d) result))))
 
 (defun match-simple (p d &optional bindings)
+    "See MATCH. Refactored to use delegated helper functions: the same case
+    analysis, with each arm's work moved into MATCH-ATOMS, MATCH-VARIABLE
+    and MATCH-PIECES rather than written inline."
     (cond ((and (atom p) (atom d))
            (match-atoms p d bindings))
           ((and (listp p) (eq '? (first p)))
@@ -110,12 +165,18 @@
         (t 'fail)))
 
 (defun elements-p (p d)
+    "Return T when both P and D are atoms, NIL otherwise."
     (and (atom p) (atom d)))
 
 (defun variable-p (p)
+    "Return T when P is a pattern variable of the form (? VARIABLE).
+    Returns NIL for atoms and for lists that do not start with the symbol ?."
     (and (listp p) (eq '? (first p))))
 
 (defun recursive-p (p d)
+    "Return T when both P and D are lists, NIL otherwise.
+    Two lists are compared element by element, so this is the case that
+    recurses."
     (and (listp p) (listp d)))
 
 (format t "~%--- add-binding: named variables bind, (? _) is ignored ---~%")
@@ -133,15 +194,33 @@
         (find-binding '(? _) '((x apple) (y red))))
 
 (defun unify-atoms (p1 p2 bindings)
+    "Unify atom P1 with atom P2.
+
+    Returns BINDINGS unchanged when P1 and P2 are EQL, otherwise the symbol
+    FAIL."
     (if (eql p1 p2) bindings 'fail))
 
 (defun unify-pieces (p1 p2 bindings)
+    "Unify the lists P1 and P2 element by element.
+
+    The first elements are unified under BINDINGS, and the bindings that
+    unification produces are threaded into the remaining elements.
+
+    Returns the extended BINDINGS alist, or the symbol FAIL as soon as any
+    pair of elements fails to unify."
     (let ((result (unify (first p1) (first p2) bindings)))
         (if (eq 'fail result)
             'fail
             (unify (rest p1) (rest p2) result))))
 
 (defun inside-or-equal-p (variable expression bindings)
+    "Return T when VARIABLE is EQUAL to EXPRESSION or occurs inside it.
+
+    EXPRESSION is searched recursively. A pattern variable met along the way
+    is replaced by its value in BINDINGS, if it has one, so that bindings
+    established earlier are followed instead of treated as opaque.
+
+    Returns NIL when VARIABLE does not occur in EXPRESSION."
     (cond ((equal variable expression) t)
           ((atom expression) nil)
           ((eq '? (first expression))
@@ -153,11 +232,24 @@
                  (inside-or-equal-p variable (rest expression) bindings)))))
 
 (defun insidep (variable expression bindings)
+    "Return T when VARIABLE occurs strictly inside EXPRESSION, NIL otherwise.
+
+    This is the occurs check that stops unification from building a circular
+    binding such as (? X) bound to (f (? X)). A VARIABLE EQUAL to EXPRESSION
+    does not count as being inside it, so unifying a variable with itself
+    remains legal."
     (if (equal variable expression)
         nil
         (inside-or-equal-p variable expression bindings)))
 
 (defun unify-variable (p1 p2 bindings)
+    "Unify the pattern variable P1 with the expression P2.
+
+    When P1 is already bound in BINDINGS, its value is unified with P2.
+    Otherwise P1 is bound to P2, provided INSIDEP reports no circularity.
+
+    Returns the extended BINDINGS alist, or the symbol FAIL when an existing
+    binding contradicts P2 or when binding P1 to P2 would be circular."
     (let ((binding (find-binding p1 bindings)))
         (if binding
             (unify (extract-value binding) p2 bindings)
@@ -166,6 +258,23 @@
                 (add-binding p1 p2 bindings)))))
 
 (defun unify (p1 p2 &optional bindings)
+    "Unify patterns P1 and P2, binding pattern variables on either side.
+
+    Unification is two-way: unlike MATCH, both P1 and P2 may contain pattern
+    variables, and a variable may be bound to another variable or to a whole
+    subexpression.
+
+    The cases are tried in order:
+
+      * both atoms         -- succeed when P1 and P2 are EQL
+      * P1 is a variable   -- follow or bind P1, subject to the occurs check
+      * P2 is a variable   -- the same, with the arguments reversed
+      * both lists         -- unify the first elements, then the rest under
+                              the bindings the first unification produced
+      * otherwise          -- an atom against a list, which cannot unify
+
+    Returns the extended BINDINGS alist on success, or the symbol FAIL when
+    P1 and P2 cannot be made to agree."
     (cond ((elements-p p1 p2) (unify-atoms p1 p2 bindings))
           ((variable-p p1) (unify-variable p1 p2 bindings))
           ((variable-p p2) (unify-variable p2 p1 bindings))
